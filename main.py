@@ -14,6 +14,12 @@ class EditMovie(FlaskForm):
     submit = SubmitField(label='Done')
 
 
+class AddMovie(FlaskForm):
+    movie_title = StringField(label='Movie Title',
+                              validators=[DataRequired()])
+    submit = SubmitField(label='Add Movie')
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap(app)
@@ -48,8 +54,7 @@ def edit_movie(id):
         movie_to_edit.rating = float(edit_movie_form.rating.data)
         movie_to_edit.review = edit_movie_form.review.data
         db.session.commit()
-        all_movies = db.session.query(Movie).all()
-        return render_template('index.html', movies=all_movies)
+        return redirect('/')
     return render_template('edit.html', form=edit_movie_form, movie=movie_to_edit)
 
 
@@ -59,6 +64,16 @@ def delete_movie(id):
     db.session.delete(movie_to_delete)
     db.session.commit()
     return redirect(url_for('home'))
+
+
+@app.route('/add', methods=['GET', 'POST'])
+def add_movie():
+    add_movie_form = AddMovie()
+    if add_movie_form.validate_on_submit():
+        movie_title = add_movie_form.movie_title.data
+        print(movie_title)
+        return redirect('/')
+    return render_template('add.html', form=add_movie_form)
 
 
 if __name__ == '__main__':
