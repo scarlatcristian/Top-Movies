@@ -5,6 +5,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 import requests
+import os
+
+API_KEY = os.environ.get('MOVIE_API_KEY')
 
 
 class EditMovie(FlaskForm):
@@ -70,9 +73,13 @@ def delete_movie(id):
 def add_movie():
     add_movie_form = AddMovie()
     if add_movie_form.validate_on_submit():
-        movie_title = add_movie_form.movie_title.data
-        print(movie_title)
-        return redirect('/')
+        movie_title = add_movie_form.movie_title.data.replace(" ", '+')
+
+        res = requests.get(
+            url=f'https://api.themoviedb.org/3/search/movie', params={"api_key": API_KEY, "query": movie_title})
+
+        data = res.json()['results']
+        return render_template("select.html", options=data)
     return render_template('add.html', form=add_movie_form)
 
 
@@ -80,5 +87,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-
-# part 4
